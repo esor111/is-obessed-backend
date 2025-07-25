@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  ig-obsessed-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ig-obsessed-backend
+    ports:
+      - "7001:7001"
+    environment:
+      - NODE_ENV=production
+      - PORT=7001
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - ig-obsessed-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  ig-obsessed-network:
+    driver: bridge
+
+# Optional: If you want to add a reverse proxy later
+# nginx:
+#   image: nginx:alpine
+#   container_name: ig-obsessed-nginx
+#   ports:
+#     - "80:80"
+#     - "443:443"
+#   volumes:
+#     - ./nginx.conf:/etc/nginx/nginx.conf
+#   depends_on:
+#     - ig-obsessed-backend
+#   networks:
+#     - ig-obsessed-ne
