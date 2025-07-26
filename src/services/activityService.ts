@@ -123,8 +123,8 @@ export class ActivityService {
     const newReps = Math.max(0, activity.reps - amount);
     return await this.updateActivity(id, { reps: newReps });
   }
-}  /
-/ Get activity progress with time calculations
+
+  // Get activity progress with time calculations
   static async getActivityProgress(id: string): Promise<ActivityProgress | null> {
     const activity = await this.getActivityById(id);
     if (!activity) return null;

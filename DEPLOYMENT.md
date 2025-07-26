@@ -1,166 +1,182 @@
-# Linux Server Deployment Guide
+# Activity Tracking Backend - Deployment Guide
 
-## Quick Setup Commands
+## 🚀 Quick Start
 
-```bash
-# 1. Clone the repository
-git clone <your-repo-url>
-cd backend
+### Prerequisites
+- Node.js 18+ installed
+- Supabase project configured
+- Environment variables set
 
-# 2. Copy environment template
-cp .env.example .env
-
-# 3. Edit environment variables
-nano .env  # or vim .env
-
-# 4. Make setup script executable
-chmod +x setup.sh
-
-# 5. Run setup script
-./setup.sh
-```
-
-## Manual Docker Commands
-
-### Development Environment
-```bash
-# Start development with hot reload
-npm run docker:dev
-
-# Or manually:
-docker-compose -f docker-compose.dev.yml up --build
-```
-
-### Production Environment
-```bash
-# Start production (detached)
-npm run docker:prod
-
-# Or manually:
-docker-compose up --build -d
-```
-
-## Environment Variables Required
-
-Edit your `.env` file with these values:
-
+### Environment Setup
+1. Copy `.env.example` to `.env`
+2. Update with your Supabase credentials:
 ```env
-# Server Configuration
-PORT=3001
-NODE_ENV=development
-
-# Supabase Configuration (REQUIRED)
+PORT=7001
 SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
-
-# CORS Configuration
+SUPABASE_ANON_KEY=your-anon-key
 FRONTEND_URL=http://localhost:3000
 ```
 
-## Useful Commands
-
+### Installation & Running
 ```bash
-# View logs
-docker-compose logs -f
+# Install dependencies
+npm install
 
-# Stop containers
-docker-compose down
+# Development mode (with hot reload)
+npm run dev
 
-# Rebuild and restart
-docker-compose up --build
+# Production build
+npm run build
+npm start
 
-# Check container status
-docker ps
+# Docker development
+npm run docker:dev
 
-# Access container shell
-docker exec -it ig-obsessed-backend-dev sh
+# Docker production
+npm run docker:prod
 ```
 
-## Troubleshooting
+## 📊 Database Schema
 
-### Common Issues
+### Tables Created
+- `activities` - Main activity tracking table
+- `activity_sessions` - Timer session tracking
+- Database functions for safe rep incrementing
+- Triggers for automatic timestamp updates
 
-1. **Port already in use**
-   ```bash
-   # Check what's using port 3001
-   sudo lsof -i :3001
-   
-   # Kill process if needed
-   sudo kill -9 <PID>
-   ```
+### Sample Data
+- 4 pre-loaded activities with realistic goals
+- Ready for immediate frontend testing
 
-2. **Permission denied**
-   ```bash
-   # Make sure Docker daemon is running
-   sudo systemctl start docker
-   
-   # Add user to docker group
-   sudo usermod -aG docker $USER
-   # Then logout and login again
-   ```
+## 🔗 API Endpoints Summary
 
-3. **Environment variables not loaded**
-   ```bash
-   # Check .env file exists and has correct values
-   cat .env
-   
-   # Make sure no spaces around = in .env
-   # Correct: SUPABASE_URL=https://...
-   # Wrong:   SUPABASE_URL = https://...
-   ```
+### Core Activity Management
+- `GET /api/activities` - List all activities
+- `POST /api/activities/:id/increment` - Increment reps
+- `POST /api/activities/:id/decrement` - Decrement reps
+- `GET /api/activities/:id/progress` - Get progress data
 
-4. **Build fails**
-   ```bash
-   # Clean Docker cache
-   docker system prune -a
-   
-   # Rebuild from scratch
-   docker-compose build --no-cache
-   ```
+### Timer & Sessions
+- `POST /api/activities/:id/sessions/start` - Start timer
+- `POST /api/activities/:id/sessions/:sessionId/end` - End timer
+- `GET /api/activities/:id/timer` - Get timer status
 
-## Health Checks
+### Dashboard
+- `GET /api/dashboard/activities` - Complete dashboard data
+- `GET /api/dashboard/activities/summary` - Simplified summary
 
-Once running, verify the API:
+## 🧪 Testing
 
+### Health Check
 ```bash
-# Health check
-curl http://localhost:3001/health
-
-# API documentation
-curl http://localhost:3001/api-docs.json
-
-# Test dashboard endpoint
-curl http://localhost:3001/api/dashboard
+curl http://localhost:7001/health
 ```
 
-## Accessing the Application
+### Test Activities API
+```bash
+# Get all activities
+curl http://localhost:7001/api/activities
 
-- **API Base URL**: http://localhost:3001
-- **Swagger Documentation**: http://localhost:3001/api-docs
-- **Health Check**: http://localhost:3001/health
+# Increment reps
+curl -X POST http://localhost:7001/api/activities/{id}/increment \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 1}'
+```
 
-## NPM Warnings
+### Run Test Script
+```bash
+node test-activities.js
+```
 
-The deprecation warnings during `npm install` are normal and don't affect functionality:
-- `rimraf@2.7.1`: Used by build tools
-- `lodash.get@4.4.2`: Used by swagger dependencies
-- `inflight@1.0.6`: Used by npm itself
-- `glob@7.x.x`: Used by various build tools
+## 📚 Documentation
 
-These are dependency warnings and the application will work perfectly fine.
+- **API Docs**: http://localhost:7001/api-docs
+- **Swagger JSON**: http://localhost:7001/api-docs.json
+- **Integration Guide**: See `FRONTEND_INTEGRATION_GUIDE.md`
+- **API Reference**: See `ACTIVITY_API.md`
 
-## Production Deployment
+## 🔧 Configuration
 
-For production servers:
+### CORS
+- Configured for frontend development
+- Default: `http://localhost:3000`
+- Update `FRONTEND_URL` in `.env` for production
 
-1. Use `docker-compose.yml` (not dev version)
-2. Set `NODE_ENV=production` in .env
-3. Consider using a reverse proxy (nginx)
-4. Set up SSL certificates
-5. Configure firewall rules
-6. Set up log rotation
-7. Monitor with health checks
+### Database
+- Supabase PostgreSQL
+- Automatic migrations applied
+- Row Level Security can be enabled if needed
 
-## Docker Compose Version Compatibility
+### Logging
+- Request logging enabled in development
+- Error handling with proper HTTP status codes
+- Graceful shutdown handling
 
-The compose files use version 3.3 for maximum compatibility with older Docker Compose versions. If you have a newer version, this will work fine.
+## 🐳 Docker Support
+
+### Development
+```bash
+npm run docker:dev
+```
+
+### Production
+```bash
+npm run docker:prod
+```
+
+## 📈 Performance
+
+### Database Optimizations
+- Indexes on frequently queried columns
+- Efficient JSONB queries for goals
+- Database functions for atomic operations
+
+### API Optimizations
+- Minimal data transfer
+- Proper HTTP caching headers
+- Error handling without sensitive data exposure
+
+## 🔒 Security
+
+### Environment Variables
+- All sensitive data in environment variables
+- No hardcoded credentials
+- Separate development/production configs
+
+### API Security
+- Input validation on all endpoints
+- SQL injection prevention via Supabase client
+- CORS properly configured
+
+## 🚀 Production Deployment
+
+### Environment Variables
+```env
+NODE_ENV=production
+PORT=7001
+SUPABASE_URL=your-production-supabase-url
+SUPABASE_ANON_KEY=your-production-anon-key
+FRONTEND_URL=https://your-frontend-domain.com
+```
+
+### Process Management
+- Use PM2 or similar for process management
+- Enable logging and monitoring
+- Set up health check endpoints
+
+### Monitoring
+- Health check: `/health`
+- API documentation: `/api-docs`
+- Monitor database connections and query performance
+
+## 🎯 Ready for Frontend Integration!
+
+Your backend is fully implemented with:
+- ✅ Complete activity tracking system
+- ✅ Timer functionality for Focus Hour
+- ✅ Goal tracking and progress calculations
+- ✅ Dashboard data aggregation
+- ✅ Comprehensive API documentation
+- ✅ Production-ready deployment setup
+
+The frontend team can now start building the UI components using the provided API endpoints!

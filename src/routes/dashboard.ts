@@ -8,6 +8,7 @@ import {
   calculateTotalEarnings,
   updateTopicCalculations
 } from '../utils/calculations';
+import { DashboardService } from '../services/dashboardService';
 
 const router = Router();
 
@@ -182,4 +183,91 @@ router.put('/global-goal', async (req: Request, res: Response) => {
   }
 });
 
-export default router;
+export default router;/**
+ *
+ @swagger
+ * /api/dashboard/activities:
+ *   get:
+ *     summary: Get activity dashboard data
+ *     description: Retrieve comprehensive activity tracking dashboard with stats and progress
+ *     tags: [Dashboard, Activities]
+ *     responses:
+ *       200:
+ *         description: Activity dashboard data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     total_activities:
+ *                       type: integer
+ *                     total_reps_today:
+ *                       type: integer
+ *                     active_sessions:
+ *                       type: integer
+ *                     completion_rate:
+ *                       type: number
+ *                 activities:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Activity'
+ *                 progress:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         description: Server error
+ */
+router.get('/activities', async (req: Request, res: Response) => {
+  try {
+    const dashboardData = await DashboardService.getDashboardData();
+    res.json(dashboardData);
+  } catch (error) {
+    console.error('Activity dashboard error:', error);
+    res.status(500).json({ error: 'Failed to fetch activity dashboard data' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/dashboard/activities/summary:
+ *   get:
+ *     summary: Get activity summary for dashboard
+ *     description: Get a simplified view of all activities with current progress
+ *     tags: [Dashboard, Activities]
+ *     responses:
+ *       200:
+ *         description: Activity summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   name:
+ *                     type: string
+ *                   current_reps:
+ *                     type: integer
+ *                   daily_goal:
+ *                     type: integer
+ *                   progress_percentage:
+ *                     type: integer
+ *       500:
+ *         description: Server error
+ */
+router.get('/activities/summary', async (req: Request, res: Response) => {
+  try {
+    const summary = await DashboardService.getActivitySummary();
+    res.json(summary);
+  } catch (error) {
+    console.error('Activity summary error:', error);
+    res.status(500).json({ error: 'Failed to fetch activity summary' });
+  }
+});
