@@ -3,13 +3,16 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ installed
 - Supabase project configured
 - Environment variables set
 
 ### Environment Setup
+
 1. Copy `.env.example` to `.env`
 2. Update with your Supabase credentials:
+
 ```env
 PORT=7001
 SUPABASE_URL=https://your-project-id.supabase.co
@@ -18,6 +21,7 @@ FRONTEND_URL=http://localhost:3000
 ```
 
 ### Installation & Running
+
 ```bash
 # Install dependencies
 npm install
@@ -39,40 +43,47 @@ npm run docker:prod
 ## 📊 Database Schema
 
 ### Tables Created
+
 - `activities` - Main activity tracking table
 - `activity_sessions` - Timer session tracking
 - Database functions for safe rep incrementing
 - Triggers for automatic timestamp updates
 
 ### Sample Data
+
 - 4 pre-loaded activities with realistic goals
 - Ready for immediate frontend testing
 
 ## 🔗 API Endpoints Summary
 
 ### Core Activity Management
+
 - `GET /api/activities` - List all activities
 - `POST /api/activities/:id/increment` - Increment reps
 - `POST /api/activities/:id/decrement` - Decrement reps
 - `GET /api/activities/:id/progress` - Get progress data
 
 ### Timer & Sessions
+
 - `POST /api/activities/:id/sessions/start` - Start timer
 - `POST /api/activities/:id/sessions/:sessionId/end` - End timer
 - `GET /api/activities/:id/timer` - Get timer status
 
 ### Dashboard
+
 - `GET /api/dashboard/activities` - Complete dashboard data
 - `GET /api/dashboard/activities/summary` - Simplified summary
 
 ## 🧪 Testing
 
 ### Health Check
+
 ```bash
 curl http://localhost:7001/health
 ```
 
 ### Test Activities API
+
 ```bash
 # Get all activities
 curl http://localhost:7001/api/activities
@@ -84,6 +95,7 @@ curl -X POST http://localhost:7001/api/activities/{id}/increment \
 ```
 
 ### Run Test Script
+
 ```bash
 node test-activities.js
 ```
@@ -98,16 +110,19 @@ node test-activities.js
 ## 🔧 Configuration
 
 ### CORS
+
 - Configured for frontend development
 - Default: `http://localhost:3000`
 - Update `FRONTEND_URL` in `.env` for production
 
 ### Database
+
 - Supabase PostgreSQL
 - Automatic migrations applied
 - Row Level Security can be enabled if needed
 
 ### Logging
+
 - Request logging enabled in development
 - Error handling with proper HTTP status codes
 - Graceful shutdown handling
@@ -115,11 +130,13 @@ node test-activities.js
 ## 🐳 Docker Support
 
 ### Development
+
 ```bash
 npm run docker:dev
 ```
 
 ### Production
+
 ```bash
 npm run docker:prod
 ```
@@ -127,11 +144,13 @@ npm run docker:prod
 ## 📈 Performance
 
 ### Database Optimizations
+
 - Indexes on frequently queried columns
 - Efficient JSONB queries for goals
 - Database functions for atomic operations
 
 ### API Optimizations
+
 - Minimal data transfer
 - Proper HTTP caching headers
 - Error handling without sensitive data exposure
@@ -139,11 +158,13 @@ npm run docker:prod
 ## 🔒 Security
 
 ### Environment Variables
+
 - All sensitive data in environment variables
 - No hardcoded credentials
 - Separate development/production configs
 
 ### API Security
+
 - Input validation on all endpoints
 - SQL injection prevention via Supabase client
 - CORS properly configured
@@ -151,6 +172,7 @@ npm run docker:prod
 ## 🚀 Production Deployment
 
 ### Environment Variables
+
 ```env
 NODE_ENV=production
 PORT=7001
@@ -160,11 +182,13 @@ FRONTEND_URL=https://your-frontend-domain.com
 ```
 
 ### Process Management
+
 - Use PM2 or similar for process management
 - Enable logging and monitoring
 - Set up health check endpoints
 
 ### Monitoring
+
 - Health check: `/health`
 - API documentation: `/api-docs`
 - Monitor database connections and query performance
@@ -172,6 +196,7 @@ FRONTEND_URL=https://your-frontend-domain.com
 ## 🎯 Ready for Frontend Integration!
 
 Your backend is fully implemented with:
+
 - ✅ Complete activity tracking system
 - ✅ Timer functionality for Focus Hour
 - ✅ Goal tracking and progress calculations
