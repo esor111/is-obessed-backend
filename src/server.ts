@@ -10,6 +10,7 @@ import topicRoutes from "./routes/topics";
 import subtopicRoutes from "./routes/subtopics";
 import categoryRoutes from "./routes/categories";
 import activityRoutes from "./routes/activities";
+import challengeRoutes from "./routes/challenge";
 
 // Import middleware
 import {
@@ -68,6 +69,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/sub-topics", subtopicRoutes);
 app.use("/api/activities", activityRoutes);
+app.use("/api/challenge", challengeRoutes);
 app.use("/api", subtopicRoutes); // Mount subtopic routes for /api/topics/:topicId/sub-topics
 
 // Handle 404 for API routes

@@ -74,5 +74,9 @@ export interface StartSessionRequest {
 export interface TimerStatus {
   session: ActivitySession;
   elapsed_minutes: number;
+  elapsed_seconds: number;
+  elapsed_milliseconds: number;
   is_running: boolean;
+  start_time: string;
+  server_time: string;
 }

@@ -8,6 +8,7 @@ import {
   StartSessionRequest,
   TimerStatus,
 } from "../types/activity";
+import ChallengeService from "./challengeService";
 
 export class ActivityService {
   // Get all activities
@@ -212,34 +213,67 @@ export class ActivityService {
 
   // End an activity session
   static async endSession(sessionId: string): Promise<ActivitySession> {
-    const { data, error } = await supabase
-      .from("activity_sessions")
-      .update({
-        end_time: new Date().toISOString(),
-        is_active: false
-      })
-      .eq("id", sessionId)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to end session: ${error.message}`);
-    }
-
-    // For Focus Hour activity, increment reps by duration in minutes
-    if (data.duration_minutes > 0) {
-      const { data: activity } = await supabase
-        .from("activities")
-        .select("name")
-        .eq("id", data.activity_id)
+    try {
+      // First get the session to calculate duration
+      const { data: sessionData, error: fetchError } = await supabase
+        .from("activity_sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .eq("is_active", true)
         .single();
 
-      if (activity?.name === "Focus Hour") {
-        await this.incrementReps(data.activity_id, Math.floor(data.duration_minutes));
+      if (fetchError) {
+        throw new Error(`Failed to fetch active session: ${fetchError.message}`);
       }
-    }
 
-    return data;
+      const now = new Date();
+      const startTime = new Date(sessionData.start_time);
+      const durationMinutes = Math.max(0, Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60)));
+
+      // Update session with end time and duration
+      const { data, error } = await supabase
+        .from("activity_sessions")
+        .update({
+          end_time: now.toISOString(),
+          duration_minutes: durationMinutes,
+          is_active: false
+        })
+        .eq("id", sessionId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to end session: ${error.message}`);
+      }
+
+      // For Focus Hour activity, increment reps by duration in minutes
+      if (durationMinutes > 0) {
+        const { data: activity } = await supabase
+          .from("activities")
+          .select("name")
+          .eq("id", data.activity_id)
+          .single();
+
+        if (activity?.name === "Focus Hour" || activity?.name === "FOCUSSED TIME") {
+          try {
+            await this.incrementReps(data.activity_id, Math.floor(durationMinutes));
+            
+            // Update challenge progress with focus hours
+            await ChallengeService.updateDailyFocusHours(durationMinutes);
+            
+            console.log(`Focus session completed: ${durationMinutes} minutes added to challenge`);
+          } catch (repError) {
+            console.error('Error updating reps or challenge:', repError);
+            // Don't fail the session end if rep update fails
+          }
+        }
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error ending session:', error);
+      throw error;
+    }
   }
 
   // Get active session for an activity
@@ -261,18 +295,29 @@ export class ActivityService {
 
   // Get timer status for an activity
   static async getTimerStatus(activityId: string): Promise<TimerStatus | null> {
-    const session = await this.getActiveSession(activityId);
-    if (!session) return null;
+    try {
+      const session = await this.getActiveSession(activityId);
+      if (!session) return null;
 
-    const now = new Date();
-    const startTime = new Date(session.start_time);
-    const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+      const now = new Date();
+      const startTime = new Date(session.start_time);
+      const elapsedMs = now.getTime() - startTime.getTime();
+      const elapsedMinutes = Math.floor(elapsedMs / (1000 * 60));
+      const elapsedSeconds = Math.floor(elapsedMs / 1000);
 
-    return {
-      session,
-      elapsed_minutes: elapsedMinutes,
-      is_running: session.is_active
-    };
+      return {
+        session,
+        elapsed_minutes: elapsedMinutes,
+        elapsed_seconds: elapsedSeconds,
+        elapsed_milliseconds: elapsedMs,
+        is_running: session.is_active,
+        start_time: session.start_time,
+        server_time: now.toISOString()
+      };
+    } catch (error) {
+      console.error('Error getting timer status:', error);
+      return null;
+    }
   }
 
   // Get all sessions for an activity
